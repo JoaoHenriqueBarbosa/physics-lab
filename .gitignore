@@ -1,0 +1,7 @@
+.venv/
+.venv-gpu/
+.gpu-env
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
