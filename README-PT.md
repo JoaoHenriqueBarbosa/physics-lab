@@ -8,7 +8,7 @@ GPU-accelerated · Geodésicas exatas · OpenGL / GLSL · Python
 
 <br>
 
-<img src="assets/blackhole-side.png" width="720" alt="Lente gravitacional de Schwarzschild — vista lateral com disco de acreção e beaming relativístico" />
+<img src="assets/blackhole-side.jpg" width="720" alt="Lente gravitacional de Schwarzschild — vista lateral com disco de acreção e beaming relativístico" />
 
 <sub>Lente gravitacional de Schwarzschild — 800 passos RK4 por pixel, disco de acreção com Doppler relativístico e perfil Novikov–Thorne</sub>
 
@@ -48,7 +48,7 @@ Simulação interativa de um buraco negro de Schwarzschild com ray tracing geod�
 **Controles:** Mouse (orbitar), Scroll (zoom), Setas (disco/temperatura), D (disco on/off), B (bloom), R (reset)
 
 <div align="center">
-<img src="assets/blackhole-top.png" width="600" alt="Buraco negro visto do polo — anel de Einstein visível" />
+<img src="assets/blackhole-top.jpg" width="600" alt="Buraco negro visto do polo — anel de Einstein visível" />
 <br>
 <sub>Vista quase polar (88.8°) — o anel de Einstein aparece como imagem secundária dentro da sombra do buraco negro</sub>
 </div>
@@ -70,11 +70,11 @@ Pacote de onda gaussiano incidindo em uma barreira retangular de potencial. Reso
 Grade de 2048 pontos, unidades naturais (ℏ = 1, m = 1). O pacote de onda tem energia cinética E = 12.5, a barreira tem altura V₀ = 15 — regime de tunelamento clássico proibido, mas quanticamente permitido.
 
 <div align="center">
-<img src="assets/tunneling-barrier.png" width="600" alt="Pacote de onda no momento do tunelamento" />
+<img src="assets/tunneling-barrier.jpg" width="600" alt="Pacote de onda no momento do tunelamento" />
 <br>
 <sub>t = 4.80 — pacote de onda atingindo a barreira, com parte já transmitida por tunelamento quântico</sub>
 <br><br>
-<img src="assets/tunneling-transmitted.png" width="600" alt="Pacote refletido e transmitido após tunelamento" />
+<img src="assets/tunneling-transmitted.jpg" width="600" alt="Pacote refletido e transmitido após tunelamento" />
 <br>
 <sub>t = 8.80 — após a interação: pacote refletido (esquerda) e transmitido (direita), demonstrando tunelamento através de barreira classicamente proibida</sub>
 </div>
@@ -86,11 +86,11 @@ Grade de 2048 pontos, unidades naturais (ℏ = 1, m = 1). O pacote de onda tem e
 Schrödinger 2D em grade de 1024×1024 (1M células), GPU-accelerated via CuPy. Simula um pacote de onda passando por uma dupla fenda e formando o padrão de interferência. Inclui simulação de colapso da função de onda com detecção posicional.
 
 <div align="center">
-<img src="assets/double-slit-interference.png" width="480" alt="Padrão de interferência da dupla fenda" />
+<img src="assets/double-slit-interference.jpg" width="480" alt="Padrão de interferência da dupla fenda" />
 <br>
 <sub>t = 15.0 — |ψ(x,y)|² após passagem pela dupla fenda, mostrando o padrão de interferência quântica</sub>
 <br><br>
-<img src="assets/double-slit-collapse.png" width="480" alt="Colapso da função de onda com 1M detecções" />
+<img src="assets/double-slit-collapse.jpg" width="480" alt="Colapso da função de onda com 1M detecções" />
 <br>
 <sub>N = 1.005.000 detecções — o histograma de colapsos reproduz o padrão de interferência de |ψ|²</sub>
 </div>
@@ -102,15 +102,15 @@ Schrödinger 2D em grade de 1024×1024 (1M células), GPU-accelerated via CuPy. 
 Par de partículas em estado emaranhado voando em direções opostas. Função de onda em 2D: `ψ(x₁,x₂) ∝ exp(−(x₁−x₂)²/4σᵣ²) · exp(−(x₁+x₂)²/4σᵣ²) · exp(ik₀(x₁−x₂))`. Grade de 1024×1024 com GPU. Gera três vídeos: evolução de |ψ|², 2 milhões de detecções revelando correlações, e colapso instantâneo ao medir uma partícula.
 
 <div align="center">
-<img src="assets/entanglement-evolution.png" width="480" alt="Evolução do estado emaranhado no espaço x1-x2" />
+<img src="assets/entanglement-evolution.jpg" width="480" alt="Evolução do estado emaranhado no espaço x1-x2" />
 <br>
 <sub>|ψ(x₁,x₂)|² em t = 14.0 — a distribuição conjunta no espaço (x₁, x₂) mostra correlação ao longo da diagonal, enquanto as distribuições marginais (projeções) são amplas</sub>
 <br><br>
-<img src="assets/entanglement-correlations.png" width="480" alt="1.7M detecções revelando correlação quântica" />
+<img src="assets/entanglement-correlations.jpg" width="480" alt="1.7M detecções revelando correlação quântica" />
 <br>
 <sub>N = 1.755.000 detecções — o scatter plot (x₁, x₂) revela a correlação do emaranhamento: medir x₁ determina x₂</sub>
 <br><br>
-<img src="assets/entanglement-collapse.png" width="480" alt="Colapso instantâneo por medição" />
+<img src="assets/entanglement-collapse.jpg" width="480" alt="Colapso instantâneo por medição" />
 <br>
 <sub>Medição de x₁ = +0.2 colapsa instantaneamente x₂ para −43.9 — a linha vermelha marca o corte da medição no espaço de configuração</sub>
 </div>
@@ -128,11 +128,11 @@ S = E(a₁,b₁) − E(a₁,b₂) + E(a₂,b₁) + E(a₂,b₂) = 2√2 ≈ 2.83
 O valor S = 2√2 (limite de Tsirelson) viola o limite clássico S ≤ 2, descartando teorias de variáveis ocultas locais.
 
 <div align="center">
-<img src="assets/bell-sweep.png" width="640" alt="Varredura angular do teste de Bell" />
+<img src="assets/bell-sweep.jpg" width="640" alt="Varredura angular do teste de Bell" />
 <br>
 <sub>Fase 2: varredura angular θ — os 4 painéis mostram fonte EPR, esferas de Bloch (Alice e Bob), scatter de detecções (a×b), e correlação E(θ) vs previsão clássica e quântica</sub>
 <br><br>
-<img src="assets/bell-chsh.png" width="640" alt="Resultado final CHSH S = 2.87" />
+<img src="assets/bell-chsh.jpg" width="640" alt="Resultado final CHSH S = 2.87" />
 <br>
 <sub>Resultado final: S = 2.87 > 2 — violação da desigualdade de Bell confirmada, consistente com o limite quântico de 2√2 ≈ 2.83</sub>
 </div>
@@ -145,17 +145,47 @@ O valor S = 2√2 (limite de Tsirelson) viola o limite clássico S ≤ 2, descar
 
 Dois relógios analógicos procedurais renderizados via fragment shader. O relógio estacionário marca o tempo coordenado *t*, enquanto o relógio em movimento marca o tempo próprio *τ = t/γ*. O fator de Lorentz `γ = 1/√(1 − v²/c²)` atrasa visualmente o ponteiro do relógio em movimento em tempo real.
 
+<div align="center">
+<img src="assets/time-dilatation.jpg" width="640" alt="Dilatação temporal — dois relógios com velocidades diferentes" />
+<br>
+<sub>Relógio estacionário (ciano) vs relógio em movimento (âmbar) — o fator γ atrasa o tempo próprio τ em relação ao tempo coordenado t</sub>
+</div>
+
+---
+
 #### `02` · Contração de Lorentz
 
 Um cubo e uma esfera lado a lado, com wireframes-fantasma mostrando o tamanho de repouso L₀ e formas sólidas mostrando o comprimento contraído `L = L₀/γ`. A contração acontece inteiramente no vertex shader da GPU — cada vértice é comprimido ao longo do eixo de movimento pelo fator `1/γ = √(1 − v²/c²)`.
+
+<div align="center">
+<img src="assets/lorentz-contraction.jpg" width="640" alt="Contração de Lorentz — cubo e esfera contraídos" />
+<br>
+<sub>Wireframes-fantasma mostram o tamanho de repouso L₀, formas sólidas mostram o comprimento contraído L = L₀/γ</sub>
+</div>
+
+---
 
 #### `03` · Transformadas de Lorentz
 
 Diagrama de Minkowski inteiramente procedural (fragment shader). Dois referenciais sobrepostos: S (azul, ortogonal) e S' (âmbar, inclinado). Três cenários interativos: relatividade da simultaneidade, cone de luz e causalidade, inversão de ordem temporal.
 
+<div align="center">
+<img src="assets/lorentz-transforms.jpg" width="640" alt="Diagrama de Minkowski com transformadas de Lorentz" />
+<br>
+<sub>Diagrama de Minkowski — referenciais S (azul) e S' (âmbar) com eventos transformados pelas equações de Lorentz</sub>
+</div>
+
+---
+
 #### `04` · Paradoxo dos Gêmeos
 
 Gêmeo A fica na Terra; Gêmeo B viaja até uma estrela distante a velocidade v e retorna. Quando se reencontram, B é mais jovem: `τ_B = T/γ < T = τ_A`. A simulação mostra a assimetria que vem da mudança de referencial na meia-volta (aceleração), resolvendo o "paradoxo".
+
+<div align="center">
+<img src="assets/twin-paradox.jpg" width="640" alt="Paradoxo dos gêmeos — diferença de idade" />
+<br>
+<sub>Gêmeo viajante (verde) envelhece menos que o estacionário (ciano) — a assimetria vem da aceleração na meia-volta</sub>
+</div>
 
 ---
 

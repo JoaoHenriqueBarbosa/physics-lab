@@ -21,26 +21,31 @@ Controles:
     ESC        Sair
 """
 
-import math, sys
+import math
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from common.engine import (
+    BaseApp, gl_bytes,
+    mat4_scale, W, H,
+)
 
 import numpy as np
 import pygame
 import moderngl
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-W, H = 1600, 900
-BLOOM_DS = 4
-SHADER_DIR = Path(__file__).parent / "shaders"
+# Event scenarios
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# ── event scenarios ──────────────────────────────────────────────
 SCENARIOS = {
     1: {
         "title": "Relatividade da Simultaneidade",
         "desc": "A e B simultâneos em S (ct=3), mas não em S'",
         "events": [(2.0, 3.0), (-2.0, 3.0), (0.0, 0.0)],
         "labels": ["A", "B", "O"],
-        "simul": (0, 1),   # pair connected by simultaneity line
+        "simul": (0, 1),
     },
     2: {
         "title": "Cone de Luz e Causalidade",
@@ -66,141 +71,33 @@ EV_COLORS_PY = [
 ]
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Matrix helpers
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-def mat4_perspective(fov, aspect, near, far):
-    f = 1.0 / math.tan(math.radians(fov) / 2)
-    m = np.zeros((4, 4), dtype="f4")
-    m[0, 0] = f / aspect; m[1, 1] = f
-    m[2, 2] = (far + near) / (near - far)
-    m[2, 3] = 2 * far * near / (near - far)
-    m[3, 2] = -1
-    return m
-
-def mat4_look_at(eye, target, up):
-    eye, target, up = (np.asarray(v, dtype="f4") for v in (eye, target, up))
-    f = target - eye; f /= np.linalg.norm(f)
-    s = np.cross(f, up); s /= np.linalg.norm(s)
-    u = np.cross(s, f)
-    m = np.eye(4, dtype="f4")
-    m[0, :3] = s;  m[0, 3] = -s.dot(eye)
-    m[1, :3] = u;  m[1, 3] = -u.dot(eye)
-    m[2, :3] = -f; m[2, 3] = f.dot(eye)
-    return m
-
-def mat4_translate(tx, ty, tz):
-    m = np.eye(4, dtype="f4"); m[0,3]=tx; m[1,3]=ty; m[2,3]=tz; return m
-
-def mat4_scale(sx, sy, sz):
-    m = np.eye(4, dtype="f4"); m[0,0]=sx; m[1,1]=sy; m[2,2]=sz; return m
-
-def _gl(m):
-    return np.ascontiguousarray(m.T).tobytes()
-
-def _load(name):
-    return (SHADER_DIR / name).read_text()
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Application
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class App:
-    def __init__(self):
-        pygame.init()
-        for attr, val in [
-            (pygame.GL_CONTEXT_MAJOR_VERSION, 3),
-            (pygame.GL_CONTEXT_MINOR_VERSION, 3),
-            (pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE),
-        ]:
-            pygame.display.gl_set_attribute(attr, val)
-        self.surface = pygame.display.set_mode((W, H), pygame.DOUBLEBUF | pygame.OPENGL)
-        pygame.display.set_caption("03 · Transformadas de Lorentz — Relatividade Restrita")
+class LorentzTransforms(BaseApp):
+    TITLE      = "03 · Transformadas de Lorentz — Relatividade Restrita"
+    SHADER_DIR = Path(__file__).parent / "shaders"
 
-        self.ctx = moderngl.create_context()
-        self.ctx.enable(moderngl.BLEND)
-        self.ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
+    CAM_TARGET = (0.0, 0.0, 0.0)
+    CAM_PHI    = 0.12
+    CAM_DIST   = 16.0
+    CAM_PHI_RANGE  = (-0.5, 1.2)
+    CAM_DIST_RANGE = (6, 30)
+    SPEED_RANGE = (-0.95, 0.95)
 
-        self._build_programs()
-        self._build_geometry()
-        self._build_fbos()
-        self._build_hud()
+    # ── setup ──────────────────────────────────────────────────
+    def setup(self):
+        self.diagram_prog = self.ctx.program(
+            vertex_shader=self.load_shader("diagram.vert"),
+            fragment_shader=self.load_shader("diagram.frag"))
+        self.diag_vao = self.build_quad(self.diagram_prog)
 
         # state
-        self.speed = 0.0
-        self.display_beta = 0.0   # smoothed for animation
+        self.display_beta = 0.0
         self.diagram_range = 5.0
         self.scenario = 1
-        self.paused = False
-        self.bloom_on = True
-        self.wall_time = 0.0
 
-        # camera
-        self.cam_theta = 0.0
-        self.cam_phi = 0.12
-        self.cam_dist = 16.0
-        self.dragging = False
-        self.last_mouse = (0, 0)
-
-        self.clock = pygame.time.Clock()
-
-    # ── programs ─────────────────────────────────────────────
-    def _build_programs(self):
-        sv = _load("screen.vert")
-        self.diagram_prog = self.ctx.program(
-            vertex_shader=_load("diagram.vert"), fragment_shader=_load("diagram.frag"))
-        self.stars_prog  = self.ctx.program(vertex_shader=sv, fragment_shader=_load("stars.frag"))
-        self.bright_prog = self.ctx.program(vertex_shader=sv, fragment_shader=_load("bloom_extract.frag"))
-        self.blur_prog   = self.ctx.program(vertex_shader=sv, fragment_shader=_load("bloom_blur.frag"))
-        self.comp_prog   = self.ctx.program(vertex_shader=sv, fragment_shader=_load("composite.frag"))
-
-    # ── geometry ─────────────────────────────────────────────
-    def _build_geometry(self):
-        fsq = np.array([-1,-1,0,0, 1,-1,1,0, -1,1,0,1, 1,1,1,1], dtype="f4")
-        self.fsq_buf = self.ctx.buffer(fsq)
-
-        def _sq(prog):
-            return self.ctx.vertex_array(prog, [(self.fsq_buf, "2f 2f", "in_position", "in_texcoord")])
-        self.stars_vao  = _sq(self.stars_prog)
-        self.bright_vao = _sq(self.bright_prog)
-        self.blur_vao   = _sq(self.blur_prog)
-        self.comp_vao   = _sq(self.comp_prog)
-
-        # diagram panel (XY plane, 10×10 units)
-        S = 5.0
-        dq = np.array([
-            -S, -S, 0, 0, 0,
-             S, -S, 0, 1, 0,
-            -S,  S, 0, 0, 1,
-             S,  S, 0, 1, 1,
-        ], dtype="f4")
-        self.diag_vao = self.ctx.vertex_array(
-            self.diagram_prog, [(self.ctx.buffer(dq), "3f 2f", "in_position", "in_texcoord")])
-
-    # ── FBOs ─────────────────────────────────────────────────
-    def _build_fbos(self):
-        self.scene_tex = self.ctx.texture((W, H), 4, dtype="f2")
-        self.scene_tex.filter = (moderngl.LINEAR, moderngl.LINEAR)
-        self.scene_fbo = self.ctx.framebuffer(
-            self.scene_tex, self.ctx.depth_renderbuffer((W, H)))
-        bw, bh = W // BLOOM_DS, H // BLOOM_DS
-        self.bloom_a_tex = self.ctx.texture((bw, bh), 4, dtype="f2")
-        self.bloom_b_tex = self.ctx.texture((bw, bh), 4, dtype="f2")
-        for t in (self.bloom_a_tex, self.bloom_b_tex):
-            t.filter = (moderngl.LINEAR, moderngl.LINEAR)
-        self.bloom_a_fbo = self.ctx.framebuffer(self.bloom_a_tex)
-        self.bloom_b_fbo = self.ctx.framebuffer(self.bloom_b_tex)
-
-    # ── HUD ──────────────────────────────────────────────────
-    def _build_hud(self):
-        self.font_title = pygame.font.SysFont("monospace", 28, bold=True)
-        self.font_med   = pygame.font.SysFont("monospace", 20)
-        self.font_sm    = pygame.font.SysFont("monospace", 16)
-        self.hud_surf = pygame.Surface((W, H), pygame.SRCALPHA)
-        self.hud_tex  = self.ctx.texture((W, H), 4)
-        self.hud_tex.filter = (moderngl.LINEAR, moderngl.LINEAR)
-
-    # ── helpers ──────────────────────────────────────────────
+    # ── helpers ────────────────────────────────────────────────
     @property
     def gamma(self):
         b2 = self.display_beta ** 2
@@ -210,95 +107,45 @@ class App:
         g = self.gamma; b = self.display_beta
         return g * (x - b * ct), g * (ct - b * x)
 
-    def _cam_eye(self):
-        x = self.cam_dist * math.sin(self.cam_theta) * math.cos(self.cam_phi)
-        y = self.cam_dist * math.sin(self.cam_phi)
-        z = self.cam_dist * math.cos(self.cam_theta) * math.cos(self.cam_phi)
-        return np.array([x, y, z], dtype="f4")
-
-    def _project(self, p3, vp):
-        p = vp @ np.array([*p3, 1.0], dtype="f4")
-        if abs(p[3]) > 1e-6: p /= p[3]
-        return int((p[0]+1)*W/2), int((1-p[1])*H/2)
-
-    # ── events of current scenario ───────────────────────────
     @property
     def _scen(self):
         return SCENARIOS[self.scenario]
 
-    # ── input ────────────────────────────────────────────────
-    def _handle_events(self):
-        for ev in pygame.event.get():
-            if ev.type == pygame.QUIT: return False
-            elif ev.type == pygame.KEYDOWN:
-                if ev.key == pygame.K_ESCAPE: return False
-                elif ev.key == pygame.K_SPACE: self.paused = not self.paused
-                elif ev.key == pygame.K_r: self.speed = 0.0
-                elif ev.key == pygame.K_b: self.bloom_on = not self.bloom_on
-                elif ev.key in (pygame.K_1, pygame.K_KP1): self.scenario = 1
-                elif ev.key in (pygame.K_2, pygame.K_KP2): self.scenario = 2
-                elif ev.key in (pygame.K_3, pygame.K_KP3): self.scenario = 3
-                elif ev.key in (pygame.K_EQUALS, pygame.K_KP_PLUS):
-                    self.diagram_range = max(2.0, self.diagram_range - 0.5)
-                elif ev.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
-                    self.diagram_range = min(12.0, self.diagram_range + 0.5)
-            elif ev.type == pygame.MOUSEBUTTONDOWN:
-                if ev.button == 1: self.dragging = True; self.last_mouse = ev.pos
-                elif ev.button == 4: self.cam_dist = max(6, self.cam_dist - 1)
-                elif ev.button == 5: self.cam_dist = min(30, self.cam_dist + 1)
-            elif ev.type == pygame.MOUSEBUTTONUP:
-                if ev.button == 1: self.dragging = False
-            elif ev.type == pygame.MOUSEMOTION and self.dragging:
-                dx = ev.pos[0] - self.last_mouse[0]
-                dy = ev.pos[1] - self.last_mouse[1]
-                self.cam_theta -= dx * 0.005
-                self.cam_phi = max(-0.5, min(1.2, self.cam_phi + dy * 0.005))
-                self.last_mouse = ev.pos
-        keys = pygame.key.get_pressed()
-        step = 0.002
-        if keys[pygame.K_RIGHT]: self.speed = min(0.95, self.speed + step)
-        if keys[pygame.K_LEFT]:  self.speed = max(-0.95, self.speed - step)
-        return True
+    # ── keys ───────────────────────────────────────────────────
+    def on_key(self, key):
+        if key == pygame.K_r:
+            self.speed = 0.0
+            return True
+        if key in (pygame.K_1, pygame.K_KP1): self.scenario = 1; return True
+        if key in (pygame.K_2, pygame.K_KP2): self.scenario = 2; return True
+        if key in (pygame.K_3, pygame.K_KP3): self.scenario = 3; return True
+        if key in (pygame.K_EQUALS, pygame.K_KP_PLUS):
+            self.diagram_range = max(2.0, self.diagram_range - 0.5); return True
+        if key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+            self.diagram_range = min(12.0, self.diagram_range + 0.5); return True
+        return False
 
-    # ── update ───────────────────────────────────────────────
-    def _update(self, dt):
-        self.wall_time += dt
-        # smooth velocity animation
+    # ── update ─────────────────────────────────────────────────
+    def update(self, dt):
         self.display_beta += (self.speed - self.display_beta) * min(dt * 6.0, 1.0)
 
-    # ── render ───────────────────────────────────────────────
-    def _render(self):
-        eye = self._cam_eye()
-        view = mat4_look_at(eye, [0, 0, 0], [0, 1, 0])
-        proj = mat4_perspective(45, W / H, 0.1, 200)
-        vp = proj @ view
-
+    # ── render scene ───────────────────────────────────────────
+    def render_scene(self, vp, eye):
         scn = self._scen
         events = scn["events"]
         simul = scn["simul"]
 
-        # ── scene FBO ────────────────────────────────────────
-        self.scene_fbo.use()
-        self.ctx.clear(0, 0, 0, 1)
-
-        # stars
-        self.ctx.disable(moderngl.DEPTH_TEST)
-        self.stars_prog["u_time"].value = self.wall_time
-        self.stars_vao.render(moderngl.TRIANGLE_STRIP)
-
-        # diagram panel
-        self.ctx.enable(moderngl.DEPTH_TEST)
-        model = mat4_scale(1, 1, 1)  # diagram lives in XY plane
+        # diagram panel (build_quad gives -1..1, scale to -5..5)
+        model = mat4_scale(5, 5, 1)
         dp = self.diagram_prog
-        dp["u_model"].write(_gl(model))
-        dp["u_viewproj"].write(_gl(vp))
+        dp["u_model"].write(gl_bytes(model))
+        dp["u_viewproj"].write(gl_bytes(vp))
         dp["u_beta"].value = self.display_beta
         dp["u_gamma"].value = self.gamma
         dp["u_range"].value = self.diagram_range
         dp["u_time"].value = self.wall_time
         dp["u_num_events"].value = len(events)
 
-        # pass events
         ev_slots = ["u_ev0", "u_ev1", "u_ev2", "u_ev3"]
         for i in range(4):
             if i < len(events):
@@ -311,46 +158,13 @@ class App:
 
         self.diag_vao.render(moderngl.TRIANGLE_STRIP)
 
-        # ── bloom ────────────────────────────────────────────
-        self.ctx.disable(moderngl.DEPTH_TEST)
-        if self.bloom_on:
-            bw, bh = W // BLOOM_DS, H // BLOOM_DS
-            self.bloom_a_fbo.use()
-            self.scene_tex.use(0)
-            self.bright_prog["u_texture"].value = 0
-            self.bright_prog["u_threshold"].value = 0.38
-            self.bright_vao.render(moderngl.TRIANGLE_STRIP)
-            for spread in (1.0, 2.0):
-                self.bloom_b_fbo.use()
-                self.bloom_a_tex.use(0)
-                self.blur_prog["u_texture"].value = 0
-                self.blur_prog["u_direction"].value = (spread / bw, 0.0)
-                self.blur_vao.render(moderngl.TRIANGLE_STRIP)
-                self.bloom_a_fbo.use()
-                self.bloom_b_tex.use(0)
-                self.blur_prog["u_texture"].value = 0
-                self.blur_prog["u_direction"].value = (0.0, spread / bh)
-                self.blur_vao.render(moderngl.TRIANGLE_STRIP)
-
-        # ── HUD ──────────────────────────────────────────────
-        self._update_hud(vp, events, scn)
-
-        # ── composite ────────────────────────────────────────
-        self.ctx.screen.use()
-        self.ctx.clear(0, 0, 0, 1)
-        self.scene_tex.use(0); self.bloom_a_tex.use(1); self.hud_tex.use(2)
-        cp = self.comp_prog
-        cp["u_scene"].value = 0; cp["u_bloom"].value = 1; cp["u_hud"].value = 2
-        cp["u_bloom_strength"].value = 1.4
-        cp["u_bloom_on"].value = int(self.bloom_on)
-        self.comp_vao.render(moderngl.TRIANGLE_STRIP)
-        pygame.display.flip()
-
-    # ── HUD ──────────────────────────────────────────────────
-    def _update_hud(self, vp, events, scn):
-        s = self.hud_surf; s.fill((0, 0, 0, 0))
+    # ── HUD ────────────────────────────────────────────────────
+    def render_hud(self, s, vp):
         white = (230, 230, 240); dim = (120, 120, 150)
         cyan = (80, 190, 255); amber = (255, 180, 50)
+
+        scn = self._scen
+        events = scn["events"]
 
         # title
         s.blit(self.font_title.render("TRANSFORMADAS DE LORENTZ", True, white), (20, 10))
@@ -378,14 +192,13 @@ class App:
         ]
         if abs(self.display_beta) > 0.01:
             b = self.display_beta
-            # x' axis direction: (1, b, 0) normalised, scaled to range
             n = math.sqrt(1 + b * b)
             ax_len = R * 0.85
             labels.append(((ax_len / n, ax_len * b / n, 0), "x'", amber))
             labels.append(((ax_len * b / n, ax_len / n, 0), "ct'", amber))
 
         for p3, txt, col in labels:
-            sx, sy = self._project(p3, vp)
+            sx, sy = self.project(p3, vp)
             if 0 < sx < W and 0 < sy < H:
                 t = self.font_med.render(txt, True, col)
                 s.blit(t, (sx - t.get_width() // 2, sy - t.get_height() // 2))
@@ -423,18 +236,6 @@ class App:
             pt = self.font_title.render("PAUSADO", True, (255, 90, 90))
             s.blit(pt, (W // 2 - pt.get_width() // 2, 10))
 
-        self.hud_tex.write(pygame.image.tobytes(s, "RGBA", True))
-
-    # ── loop ─────────────────────────────────────────────────
-    def run(self):
-        running = True
-        while running:
-            dt = min(self.clock.tick(60) / 1000.0, 0.05)
-            running = self._handle_events()
-            self._update(dt)
-            self._render()
-        pygame.quit()
-
 
 if __name__ == "__main__":
-    App().run()
+    LorentzTransforms().run()

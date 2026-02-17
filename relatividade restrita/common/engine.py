@@ -90,6 +90,8 @@ class BaseApp:
     CAM_THETA  = 0.0
     CAM_PHI    = 0.35
     CAM_DIST   = 18.0
+    CAM_PHI_RANGE  = (0.05, 1.4)
+    CAM_DIST_RANGE = (5, 40)
     SPEED_RANGE = (0.0, 0.995)
 
     # ── init ─────────────────────────────────────────────────
@@ -233,15 +235,16 @@ class BaseApp:
                 else: self.on_key(ev.key)
             elif ev.type == pygame.MOUSEBUTTONDOWN:
                 if   ev.button == 1: self._drag = True; self._last_m = ev.pos
-                elif ev.button == 4: self.cam_dist = max(5, self.cam_dist - 1)
-                elif ev.button == 5: self.cam_dist = min(40, self.cam_dist + 1)
+                elif ev.button == 4: self.cam_dist = max(self.CAM_DIST_RANGE[0], self.cam_dist - 1)
+                elif ev.button == 5: self.cam_dist = min(self.CAM_DIST_RANGE[1], self.cam_dist + 1)
             elif ev.type == pygame.MOUSEBUTTONUP:
                 if ev.button == 1: self._drag = False
             elif ev.type == pygame.MOUSEMOTION and self._drag:
                 dx = ev.pos[0] - self._last_m[0]
                 dy = ev.pos[1] - self._last_m[1]
                 self.cam_theta -= dx * 0.005
-                self.cam_phi = max(0.05, min(1.4, self.cam_phi + dy * 0.005))
+                phi_lo, phi_hi = self.CAM_PHI_RANGE
+                self.cam_phi = max(phi_lo, min(phi_hi, self.cam_phi + dy * 0.005))
                 self._last_m = ev.pos
         keys = pygame.key.get_pressed()
         lo, hi = self.SPEED_RANGE

@@ -8,7 +8,7 @@ GPU-accelerated · Exact Geodesics · OpenGL / GLSL · Python
 
 <br>
 
-<img src="assets/blackhole-side.png" width="720" alt="Schwarzschild gravitational lensing — side view with accretion disk and relativistic beaming" />
+<img src="assets/blackhole-side.jpg" width="720" alt="Schwarzschild gravitational lensing — side view with accretion disk and relativistic beaming" />
 
 <sub>Schwarzschild gravitational lensing — 800 RK4 steps per pixel, accretion disk with relativistic Doppler and Novikov–Thorne profile</sub>
 
@@ -48,7 +48,7 @@ Interactive simulation of a Schwarzschild black hole with exact geodesic ray tra
 **Controls:** Mouse (orbit), Scroll (zoom), Arrows (disk/temperature), D (disk on/off), B (bloom), R (reset)
 
 <div align="center">
-<img src="assets/blackhole-top.png" width="600" alt="Black hole seen from the pole — Einstein ring visible" />
+<img src="assets/blackhole-top.jpg" width="600" alt="Black hole seen from the pole — Einstein ring visible" />
 <br>
 <sub>Near-polar view (88.8°) — the Einstein ring appears as a secondary image inside the black hole shadow</sub>
 </div>
@@ -70,11 +70,11 @@ Gaussian wave packet incident on a rectangular potential barrier. Solves the 1D 
 2048-point grid, natural units (ℏ = 1, m = 1). The wave packet has kinetic energy E = 12.5, the barrier has height V₀ = 15 — a classically forbidden but quantum-mechanically allowed tunneling regime.
 
 <div align="center">
-<img src="assets/tunneling-barrier.png" width="600" alt="Wave packet at the moment of tunneling" />
+<img src="assets/tunneling-barrier.jpg" width="600" alt="Wave packet at the moment of tunneling" />
 <br>
 <sub>t = 4.80 — wave packet hitting the barrier, with part already transmitted by quantum tunneling</sub>
 <br><br>
-<img src="assets/tunneling-transmitted.png" width="600" alt="Reflected and transmitted packet after tunneling" />
+<img src="assets/tunneling-transmitted.jpg" width="600" alt="Reflected and transmitted packet after tunneling" />
 <br>
 <sub>t = 8.80 — after interaction: reflected (left) and transmitted (right) packets, demonstrating tunneling through a classically forbidden barrier</sub>
 </div>
@@ -86,11 +86,11 @@ Gaussian wave packet incident on a rectangular potential barrier. Solves the 1D 
 2D Schrödinger on a 1024×1024 grid (1M cells), GPU-accelerated via CuPy. Simulates a wave packet passing through a double slit and forming the interference pattern. Includes wave function collapse simulation with positional detection.
 
 <div align="center">
-<img src="assets/double-slit-interference.png" width="480" alt="Double slit interference pattern" />
+<img src="assets/double-slit-interference.jpg" width="480" alt="Double slit interference pattern" />
 <br>
 <sub>t = 15.0 — |ψ(x,y)|² after passing through the double slit, showing the quantum interference pattern</sub>
 <br><br>
-<img src="assets/double-slit-collapse.png" width="480" alt="Wave function collapse with 1M detections" />
+<img src="assets/double-slit-collapse.jpg" width="480" alt="Wave function collapse with 1M detections" />
 <br>
 <sub>N = 1,005,000 detections — the collapse histogram reproduces the |ψ|² interference pattern</sub>
 </div>
@@ -102,15 +102,15 @@ Gaussian wave packet incident on a rectangular potential barrier. Solves the 1D 
 Pair of particles in an entangled state flying in opposite directions. 2D wave function: `ψ(x₁,x₂) ∝ exp(−(x₁−x₂)²/4σᵣ²) · exp(−(x₁+x₂)²/4σᵣ²) · exp(ik₀(x₁−x₂))`. 1024×1024 grid with GPU. Generates three videos: |ψ|² evolution, 2 million detections revealing correlations, and instantaneous collapse upon measuring one particle.
 
 <div align="center">
-<img src="assets/entanglement-evolution.png" width="480" alt="Entangled state evolution in x1-x2 space" />
+<img src="assets/entanglement-evolution.jpg" width="480" alt="Entangled state evolution in x1-x2 space" />
 <br>
 <sub>|ψ(x₁,x₂)|² at t = 14.0 — the joint distribution in (x₁, x₂) space shows correlation along the diagonal, while the marginal distributions (projections) are broad</sub>
 <br><br>
-<img src="assets/entanglement-correlations.png" width="480" alt="1.7M detections revealing quantum correlation" />
+<img src="assets/entanglement-correlations.jpg" width="480" alt="1.7M detections revealing quantum correlation" />
 <br>
 <sub>N = 1,755,000 detections — the scatter plot (x₁, x₂) reveals the entanglement correlation: measuring x₁ determines x₂</sub>
 <br><br>
-<img src="assets/entanglement-collapse.png" width="480" alt="Instantaneous collapse by measurement" />
+<img src="assets/entanglement-collapse.jpg" width="480" alt="Instantaneous collapse by measurement" />
 <br>
 <sub>Measurement of x₁ = +0.2 instantaneously collapses x₂ to −43.9 — the red line marks the measurement slice in configuration space</sub>
 </div>
@@ -128,11 +128,11 @@ S = E(a₁,b₁) − E(a₁,b₂) + E(a₂,b₁) + E(a₂,b₂) = 2√2 ≈ 2.83
 The value S = 2√2 (Tsirelson's bound) violates the classical limit S ≤ 2, ruling out local hidden variable theories.
 
 <div align="center">
-<img src="assets/bell-sweep.png" width="640" alt="Bell test angular sweep" />
+<img src="assets/bell-sweep.jpg" width="640" alt="Bell test angular sweep" />
 <br>
 <sub>Phase 2: angular sweep θ — the 4 panels show EPR source, Bloch spheres (Alice and Bob), detection scatter (a×b), and correlation E(θ) vs classical and quantum predictions</sub>
 <br><br>
-<img src="assets/bell-chsh.png" width="640" alt="Final CHSH result S = 2.87" />
+<img src="assets/bell-chsh.jpg" width="640" alt="Final CHSH result S = 2.87" />
 <br>
 <sub>Final result: S = 2.87 > 2 — Bell inequality violation confirmed, consistent with the quantum limit of 2√2 ≈ 2.83</sub>
 </div>
@@ -145,17 +145,47 @@ The value S = 2√2 (Tsirelson's bound) violates the classical limit S ≤ 2, ru
 
 Two procedural analog clocks rendered via fragment shader. The stationary clock marks coordinate time *t*, while the moving clock marks proper time *τ = t/γ*. The Lorentz factor `γ = 1/√(1 − v²/c²)` visually delays the moving clock's hand in real time.
 
+<div align="center">
+<img src="assets/time-dilatation.jpg" width="640" alt="Time dilation — two clocks at different velocities" />
+<br>
+<sub>Stationary clock (cyan) vs moving clock (amber) — the γ factor delays proper time τ relative to coordinate time t</sub>
+</div>
+
+---
+
 #### `02` · Lorentz Contraction
 
 A cube and a sphere side by side, with ghost wireframes showing the rest length L₀ and solid shapes showing the contracted length `L = L₀/γ`. The contraction happens entirely in the GPU vertex shader — each vertex is compressed along the axis of motion by the factor `1/γ = √(1 − v²/c²)`.
+
+<div align="center">
+<img src="assets/lorentz-contraction.jpg" width="640" alt="Lorentz contraction — contracted cube and sphere" />
+<br>
+<sub>Ghost wireframes show rest length L₀, solid shapes show contracted length L = L₀/γ</sub>
+</div>
+
+---
 
 #### `03` · Lorentz Transforms
 
 Fully procedural Minkowski diagram (fragment shader). Two overlaid reference frames: S (blue, orthogonal) and S' (amber, tilted). Three interactive scenarios: relativity of simultaneity, light cone and causality, temporal order reversal.
 
+<div align="center">
+<img src="assets/lorentz-transforms.jpg" width="640" alt="Minkowski diagram with Lorentz transforms" />
+<br>
+<sub>Minkowski diagram — reference frames S (blue) and S' (amber) with events transformed by the Lorentz equations</sub>
+</div>
+
+---
+
 #### `04` · Twin Paradox
 
 Twin A stays on Earth; Twin B travels to a distant star at velocity v and returns. When they reunite, B is younger: `τ_B = T/γ < T = τ_A`. The simulation shows the asymmetry that comes from the change of reference frame at the turnaround (acceleration), resolving the "paradox".
+
+<div align="center">
+<img src="assets/twin-paradox.jpg" width="640" alt="Twin paradox — age difference" />
+<br>
+<sub>Traveling twin (green) ages less than the stationary one (cyan) — the asymmetry comes from the acceleration at turnaround</sub>
+</div>
 
 ---
 
